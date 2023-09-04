@@ -2,7 +2,7 @@ import { Button, Flex, Text } from "@chakra-ui/react";
 import "@fontsource/rampart-one";
 import "@fontsource/potta-one";
 import { useMetaMask } from "metamask-react";
-import Title from "./Title";
+import Title from "../Title";
 
 const ConnectButton: React.FC = () => {
   const { connect, status } = useMetaMask();

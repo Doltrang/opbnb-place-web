@@ -3,7 +3,7 @@ import { Box } from "@chakra-ui/react";
 import { DIMENSION, PIXEL_COLORS } from "../../util/colors";
 import { toast } from "react-toastify";
 import { useConnectedMetaMask } from "metamask-react";
-import { BASE_URL, CANVAS_UID } from "../../util/consts";
+import { BASE_URL } from "../../util/consts";
 
 interface PixelProps {
   mouseHeld: boolean;
@@ -36,8 +36,7 @@ const Pixel: React.FC<PixelProps> = ({
           },
           method: "POST",
           body: JSON.stringify({
-            uid: CANVAS_UID,
-            uname: account,
+            address: account,
             loc: {
               x: Math.floor(index / DIMENSION),
               y: index % DIMENSION,
