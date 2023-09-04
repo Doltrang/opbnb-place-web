@@ -1,18 +1,27 @@
 import { Flex } from "@chakra-ui/react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Pixel from "../components/Pixel/Pixel";
 import ColorSelector from "../components/ColorSelector/ColorSelector";
 import Title from "../components/Title";
 import { DEFAULT_CANVAS, getCanvasPixels } from "../util/colors";
 import { toast } from "react-toastify";
-import { BASE_URL } from "../util/consts";
+import { BASE_URL, OPBNB_PLACE_ADDR } from "../util/consts";
 import useWebSocket from "react-use-websocket";
+import { Contract, ethers } from "ethers";
+import OpBNBPlaceAbi from "../abi/OpBNBPlace.json";
+import { useConnectedMetaMask } from "metamask-react";
 
 const Canvas = () => {
   const { lastMessage } = useWebSocket(
     `${BASE_URL.replace("http", "ws")}/opbnbplace`
   );
   const [localLastMessage, setLocalLastMessage] = useState("");
+  const [contract, setContract] = useState<Contract | null>(null);
+
+  const { ethereum } = useConnectedMetaMask();
+  const provider = useMemo(() => {
+    return new ethers.BrowserProvider(ethereum);
+  }, [ethereum]);
 
   const [mouseHeld, setMouseHeld] = useState(false);
   const [canvasData, setCanvasData] = useState("");
@@ -40,6 +49,12 @@ const Canvas = () => {
   useEffect(() => {
     fetchCanvas();
   }, []);
+
+  useEffect(() => {
+    provider.getSigner().then((signer) => {
+      setContract(new Contract(OPBNB_PLACE_ADDR, OpBNBPlaceAbi, signer));
+    });
+  }, [provider]);
 
   const [pixels, setPixels] = useState(DEFAULT_CANVAS);
   const [colorSelected, setColorSelected] = useState(0);
@@ -87,6 +102,7 @@ const Canvas = () => {
                 key={index}
                 index={index}
                 defaultBg={colorCode}
+                contract={contract}
               ></Pixel>
             ))}
           </Flex>

@@ -4,12 +4,14 @@ import { DIMENSION, PIXEL_COLORS } from "../../util/colors";
 import { toast } from "react-toastify";
 import { useConnectedMetaMask } from "metamask-react";
 import { BASE_URL } from "../../util/consts";
+import { Contract, ethers } from "ethers";
 
 interface PixelProps {
   mouseHeld: boolean;
   colorSelected: number;
   defaultBg: number;
   index: number;
+  contract: Contract | null;
 }
 
 const Pixel: React.FC<PixelProps> = ({
@@ -17,6 +19,7 @@ const Pixel: React.FC<PixelProps> = ({
   colorSelected,
   defaultBg,
   index,
+  contract,
 }) => {
   const { account } = useConnectedMetaMask();
   const [pixelColor, setPixelColor] = useState(0);
@@ -26,8 +29,17 @@ const Pixel: React.FC<PixelProps> = ({
   }, [defaultBg]);
 
   const updatePixelColor = async () => {
-    if (colorSelected !== pixelColor) {
+    if (colorSelected !== pixelColor && contract) {
       try {
+        const tx = await contract.placePixel(index, colorSelected, 0, {
+          value: ethers.parseEther("0.001"),
+        });
+        // Currently the transaction has been sent to the mempool,
+        // but has not yet been included. So, we...
+        // ...wait for the transaction to be included.
+        await tx.wait();
+
+        // TODO: Should be update all BE
         console.log("Updating pixel to server", colorSelected, index);
         await fetch(`${BASE_URL}/pixel/update`, {
           headers: {
